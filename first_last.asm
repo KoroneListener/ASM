@@ -1,4 +1,4 @@
-    .section .rdata,"dr"
+.section .rdata,"dr"
 .first:
     .ascii "First element: %d\n\0"
 .last:
@@ -14,29 +14,34 @@ main:
     .seh_pushreg    %rbp
     movq    %rsp, %rbp
     .seh_setframe    %rbp, 0
-    subq    $64, %rsp
-    .seh_stackalloc    64
+    subq    $80, %rsp
+    .seh_stackalloc   80
     .seh_endprologue
     call    __main
-    movl    $1, -32(%rbp)
-    movl    $2, -28(%rbp)
-    movl    $3, -24(%rbp)
-    movl    $4, -20(%rbp)
-    movl    $5, -16(%rbp)
-    movl    $5, -4(%rbp)
-    movl    -32(%rbp), %eax
-    movl    %eax, %edx
-    leaq    .first(%rip), %rcx
-    call    printf
+    movl    $0, -4(%rbp)
+    jmp .fill
+.loop:
     movl    -4(%rbp), %eax
-    subl    $1, %eax
+    leal    1(%rax), %edx
+    movl    -4(%rbp), %eax
     cltq
-    movl    -32(%rbp,%rax,4), %eax
+    movl    %edx, -48(%rbp, %rax,4)
+    addl    $1, -4(%rbp)
+.fill:
+    cmpl    $9, -4(%rbp)
+    jle .loop
+    movl    -48(%rbp), %eax
     movl    %eax, %edx
-    leaq    .last(%rip), %rcx
+    leaq    .first(%rip), %rax
+    movq    %rax, %rcx
+    call    printf
+    movl    -12(%rbp), %eax
+    movl    %eax, %edx
+    leaq    .last(%rip), %rax
+    movq    %rax, %rcx
     call    printf
     movl    $0, %eax
-    addq    $64, %rsp
+    addq    $80, %rsp
     popq    %rbp
     ret
     .seh_endproc
